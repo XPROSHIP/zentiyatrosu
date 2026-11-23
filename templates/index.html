@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="tr" data-theme="obsidian">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="theme-color" content="#0d0f14" />
+  <title>ZEN Tiyatrosu — İşitsel Kütüphane</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;0,700;1,600&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+  <div id="ambient-glow" class="ambient-glow"></div>
+
+  <!-- App Shell -->
+  <div class="app-shell">
+    <!-- Top Header -->
+    <header class="topbar">
+      <div class="brand" onclick="app.navigate('radyo_tiyatrosu')">
+        <div class="brand-mark">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3a9 9 0 0 0-9 9v5a3 3 0 0 0 3 3h1a2 2 0 0 0 2-2v-4a2 2 0 0 0-2-2H5.07A7.002 7.002 0 0 1 12 5a7.002 7.002 0 0 1 6.93 7H17a2 2 0 0 0-2 2v4a2 2 0 0 0 2 2h1a3 3 0 0 0 3-3v-5a9 9 0 0 0-9-9Z"/></svg>
+        </div>
+        <div>
+          <span class="brand-name">ZEN Tiyatrosu</span>
+          <span id="brand-total" class="brand-sub">Yükleniyor...</span>
+        </div>
+      </div>
+
+      <div class="search-wrap">
+        <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+        <input id="search-input" type="search" placeholder="Oyun, seri veya bölüm ara..." autocomplete="off" />
+      </div>
+
+      <div class="topbar-actions">
+        <button id="btn-sfx" class="icon-btn active" title="Tıklama Sesleri" aria-label="Tıklama Sesleri">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M11 5 6 9H2v6h4l5 4V5Z"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>
+        </button>
+        <button id="btn-theme" class="icon-btn" title="Tema Değiştir" aria-label="Tema Değiştir">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M4.93 4.93l1.41 1.41m11.32 11.32 1.41 1.41M2 12h2m16 0h2M4.93 19.07l1.41-1.41m11.32-11.32 1.41-1.41"/></svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- Category Tabs -->
+    <nav class="cat-nav" aria-label="Kategoriler">
+      <button class="cat-tab active" data-cat="radyo_tiyatrosu">Radyo Tiyatrosu</button>
+      <button class="cat-tab" data-cat="arkasi_yarin">Arkası Yarın</button>
+      <button class="cat-tab" data-cat="cocuklar">Çocuklar İçin</button>
+      <button class="cat-tab" data-cat="offline">Çevrimdışı</button>
+      <button class="cat-tab" data-cat="favorites">Favoriler &amp; Devam</button>
+    </nav>
+
+    <!-- Filter & Sort Bar -->
+    <section class="toolbar">
+      <div class="filter-pills">
+        <button class="pill active" data-filter="available">Erişilebilir</button>
+        <button class="pill" data-filter="all">Tümü</button>
+        <button class="pill" data-filter="audio">Doğrudan Ses</button>
+        <button class="pill" data-filter="youtube">YouTube</button>
+      </div>
+      <div class="toolbar-right">
+        <span id="result-count" class="result-count">Yükleniyor...</span>
+        <select id="sort-select" class="sort-select" aria-label="Sıralama">
+          <option value="title_asc">A → Z</option>
+          <option value="title_desc">Z → A</option>
+          <option value="duration_desc">Süre (Uzun → Kısa)</option>
+          <option value="duration_asc">Süre (Kısa → Uzun)</option>
+          <option value="rating_desc">Puan (Yüksek)</option>
+        </select>
+      </div>
+    </section>
+
+    <!-- Main Library Grid -->
+    <main id="library-grid" class="library-grid">
+      <div class="loading-state">Kütüphane hazırlanıyor...</div>
+    </main>
+  </div>
+
+  <!-- Series Detail Modal (Arkasi Yarin) -->
+  <div id="series-modal" class="modal-backdrop hidden" role="dialog" aria-modal="true">
+    <div class="modal-sheet">
+      <button class="modal-close icon-btn" id="close-series-modal" aria-label="Kapat">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg>
+      </button>
+      <div class="series-hero">
+        <img id="series-cover" src="" alt="" class="series-cover" crossorigin="anonymous" />
+        <div class="series-info">
+          <span class="series-badge">Arkası Yarın Serisi</span>
+          <h2 id="series-title"></h2>
+          <p id="series-meta" class="series-meta"></p>
+          <div class="series-actions">
+            <button id="btn-series-play" class="btn-primary-icon" title="İlk Bölümden Oynat">
+              <svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+              <span>Dinle</span>
+            </button>
+            <button id="btn-series-offline" class="btn-secondary-icon" title="Tüm Bölümleri Birleştirip Uygulama İçi Çevrimdışı Kaydet">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12m0 0-4-4m4 4 4-4"/><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>
+              <span>Uygulamaya Kaydet</span>
+            </button>
+            <button id="btn-series-download" class="btn-secondary-icon" title="Tüm Bölümleri Tek MP3 Dosyası Olarak Cihaza İndir">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              <span>Cihaza MP3 İndir</span>
+            </button>
+          </div>
+          <div id="merge-progress" class="merge-progress hidden"></div>
+        </div>
+      </div>
+      <div id="series-episodes" class="episodes-list"></div>
+    </div>
+  </div>
+
+  <!-- Fullscreen Immersive Player Modal -->
+  <div id="full-player" class="full-player hidden" role="dialog" aria-modal="true">
+    <div class="fp-backdrop"></div>
+    <div class="fp-container">
+      <div class="fp-top">
+        <button id="fp-minimize" class="icon-btn" aria-label="Küçült">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg>
+        </button>
+        <span id="fp-source-badge" class="fp-badge">SES</span>
+        <button id="fp-fav" class="icon-btn" aria-label="Favori">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>
+        </button>
+      </div>
+
+      <div class="fp-art-wrap">
+        <img id="fp-cover" src="" alt="" class="fp-cover" crossorigin="anonymous" />
+        <div id="yt-embed-box" class="yt-embed-box hidden"><div id="yt-iframe-target"></div></div>
+      </div>
+
+      <div class="fp-meta">
+        <h2 id="fp-title">Oyun Seçilmedi</h2>
+        <p id="fp-subtitle"></p>
+      </div>
+
+      <div class="fp-progress">
+        <input id="fp-seek" type="range" min="0" max="100" value="0" step="1" aria-label="İlerleme" />
+        <div class="fp-times">
+          <span id="fp-current">00:00</span>
+          <span id="fp-duration">00:00</span>
+        </div>
+      </div>
+
+      <div class="fp-controls">
+        <button id="fp-prev" class="icon-btn lg" aria-label="Önceki">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 6h2v12H6zm3.5 6 8.5 6V6z"/></svg>
+        </button>
+        <button id="fp-back15" class="icon-btn lg" aria-label="15 saniye geri">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><text x="12" y="15" text-anchor="middle" font-size="7" fill="currentColor" stroke="none" font-weight="700">15</text></svg>
+        </button>
+        <button id="fp-play" class="play-fab" aria-label="Oynat / Duraklat">
+          <svg id="fp-play-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+        </button>
+        <button id="fp-fwd30" class="icon-btn lg" aria-label="30 saniye ileri">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M21 12a9 9 0 1 1-9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><text x="12" y="15" text-anchor="middle" font-size="7" fill="currentColor" stroke="none" font-weight="700">30</text></svg>
+        </button>
+        <button id="fp-next" class="icon-btn lg" aria-label="Sonraki">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/></svg>
+        </button>
+      </div>
+
+      <div class="fp-extras">
+        <button id="fp-speed" class="chip-btn" aria-label="Oynatma Hızı">1.0x</button>
+        <button id="fp-sleep" class="chip-btn" aria-label="Uyku Zamanlayıcı">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
+          <span id="fp-sleep-label"></span>
+        </button>
+        <button id="fp-offline-save" class="icon-btn" title="Çevrimdışı Kaydet" aria-label="Çevrimdışı Kaydet">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M12 3v12m0 0-4-4m4 4 4-4"/><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>
+        </button>
+        <button id="fp-download" class="icon-btn" title="Cihaza İndir" aria-label="Cihaza İndir">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Persistent Mini Player -->
+  <div id="mini-player" class="mini-player hidden">
+    <div class="mp-progress-line"><div id="mp-progress-fill"></div></div>
+    <div class="mp-inner" id="mp-open-full">
+      <img id="mp-cover" src="" alt="" class="mp-cover" crossorigin="anonymous" />
+      <div class="mp-info">
+        <div id="mp-title" class="mp-title"></div>
+        <div id="mp-sub" class="mp-sub"></div>
+      </div>
+      <div class="mp-actions" onclick="event.stopPropagation()">
+        <button id="mp-back15" class="icon-btn" aria-label="15s Geri">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+        </button>
+        <button id="mp-play" class="icon-btn play-mini" aria-label="Oynat / Duraklat">
+          <svg id="mp-play-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Corner Merge/Download Popup -->
+  <div id="job-popup" class="job-popup hidden">
+    <div class="job-dot" id="job-dot"></div>
+    <div class="job-text">
+      <div id="job-title" class="job-title">Hazırlanıyor...</div>
+      <div id="job-sub" class="job-sub">Lütfen bekleyin</div>
+    </div>
+    <button id="job-close" class="icon-btn" style="width:28px;height:28px;border-radius:8px;" aria-label="Kapat">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg>
+    </button>
+  </div>
+
+  <!-- Toast Notification -->
+  <div id="toast" class="toast hidden"></div>
+
+  <audio id="audio-el" preload="metadata"></audio>
+  <script src="/static/app.js"></script>
+</body>
+</html>

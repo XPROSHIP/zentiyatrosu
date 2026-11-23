@@ -1,0 +1,6 @@
+cache/
+__pycache__/
+*.pyc
+dist/
+.wrangler/
+Tiyatro Arşiv Linkleri.txt
